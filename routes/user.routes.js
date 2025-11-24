@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { z } from 'zod';
 import prisma from '../db/prisma.js';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const userschema = z.object({
