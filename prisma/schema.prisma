@@ -13,4 +13,27 @@ model User{
   username String @unique
   email String @unique
   password String
+  posts Post[]
+  comments Comment[]
+  followers User[] @relation("userfollows")
+  following User[] @relation("userfollows")
+}
+
+model Post{
+  id Int @id@default(autoincrement())
+  content String
+  authorid Int
+  author User @relation(fields : [authorid], references : [id])
+  createdAt DateTime @default(now())
+  comments Comment[]
+}
+
+model Comment{
+  id Int @id@default(autoincrement())
+  content String
+  authorid Int
+  author User @relation(fields : [authorid], references : [id])
+  postid Int
+  post Post @relation(fields : [postid], references : [id])
+  createdAt DateTime @default(now())
 }
