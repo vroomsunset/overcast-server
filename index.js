@@ -16,7 +16,7 @@ app.use(cors({
 }))
 app.use(cookieParser());
 
-
+//edited by supreme
 
 app.use('/api/v1/auth', user);
 app.use('/api/v1/post', post);
