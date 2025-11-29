@@ -5,16 +5,17 @@ import cookieParser from 'cookie-parser';
 import post from './routes/post.routes.js';
 import comment from './routes/comment.routes.js';
 import follow from './routes/follow.routes.js';
+import 'dotenv/config'
 // import prisma from './db/prisma.js';
 const port = 8080;
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'http://127.0.0.1:5173',
     credentials: true,
 }))
-app.use(cookieParser());
 
 //edited by supreme
 
@@ -22,9 +23,10 @@ app.use('/api/v1/auth', user);
 app.use('/api/v1/post', post);
 app.use('/api/v1/comment', comment);
 app.use('/api/v1/follow', follow);
-app.get('/test', (req, res) => {
+app.get('/', (req, res) => {
+    console.log(req.cookies)
     console.log("test");
-    res.json({msg : 'test'});
+    res.json({ msg: req.cookies });
 })
 
 app.listen(port, () => {

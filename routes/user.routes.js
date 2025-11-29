@@ -6,69 +6,98 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const userschema = z.object({
-    username : z.string().trim().min(4).max(15),
-    email : z.string().email().trim().optional(),
-    password : z.string().trim().min(5).max(20)
+    username: z.string().trim().min(4).max(15),
+    email: z.string().email().trim().optional(),
+    password: z.string().trim().min(5).max(20)
 })
 
-router.post('/signup', async(req, res) => {
+router.post('/signup', async (req, res) => {
     // const data = req.body;
-    try{
+    try {
         const result = userschema.safeParse(req.body); //safeParse throws boolean, parse throws error
         // console.log(result);
-        if(!result.success) return res.json({msg : 'invalid credentials'})
+        if (!result.success) return res.json({ msg: 'invalid credentials' })
         const hash = await bcrypt.hash(result.data.password, 10);
         // console.log(hash);
-        const user = await prisma.user.create({ data : {
-            username : result.data.username,
-            email : result.data.email,
-            password : hash
-
-        }})
+        const user = await prisma.user.create({
+            data: {
+                username: result.data.username,
+                email: result.data.email,
+                password: hash
+            }
+        })
         // console.log(user);
-        const token = jwt.sign({ id : user.id }, process.env.JWT_SECRET)
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET)
         res.cookie('token', token, {
             httpOnly: true,
-            sameSite : true
-        }).json({msg : 'signed up'});
-    }catch(e){
+            sameSite: 'none',
+            secure: true,
+            path: '/'
+
+        }).json({ msg: 'signed up' });
+    } catch (e) {
         console.error(e);
-        res.json({msg : e});
+        res.json({ msg: e });
     }
 })
 
-router.post('/login', async(req, res) => {
-    try{
+router.post('/login', async (req, res) => {
+    try {
         const result = userschema.safeParse(req.body);
         // console.log(result);
-        if(!result.success) return res.json({msg : 'invalid credentials'});
-        const user = await prisma.user.findUnique({ where : {
-            username : result.data.username
-        }})
+        if (!result.success) return res.json({ msg: 'invalid credentials' });
+        const user = await prisma.user.findUnique({
+            where: {
+                username: result.data.username
+            }
+        })
         // console.log(user);
-        if(!user) return res.json({msg : 'user not found'});
+        if (!user) return res.json({ msg: 'user not found' });
 
         const pass = await bcrypt.compare(result.data.password, user.password);
-        if(!pass) return res.json({msg : 'invalid password'});
+        if (!pass) return res.json({ msg: 'invalid password' });
 
-        const token = jwt.sign({id : user.id}, process.env.JWT_SECRET);
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
         // console.log(token);
         res.cookie('token', token, {
             httpOnly: true,
-            sameSite : true
-        }).json({msg : 'logged in!'});
+            sameSite: 'none',
+            secure: true,
+            path: '/'
+        }).json({ msg: 'logged in!' });
 
-    }catch(e){
+    } catch (e) {
         console.error(e);
-        res.json({msg : e});
+        res.json({ msg: e });
     }
 })
 
 router.post('/logout', (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
-        sameSite : true
-    }).json({msg : 'logged out!'});
+        sameSite: true
+    }).json({ msg: 'logged out!' });
+})
+
+
+router.get('/me', async (req, res) => {
+    const token = req.cookies?.token;
+    if (!token) {
+        console.log('no token')
+    }
+    const decode = jwt.verify(token, process.env.JWT_SECRET)
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: decode.id },
+            select: {
+                likes: true,
+                comments: true
+            }
+        })
+        res.json({ user });
+    } catch (e) {
+        console.error(e);
+    }
 })
 
 export default router;
