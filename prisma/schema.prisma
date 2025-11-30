@@ -18,7 +18,6 @@ model User{
   likes Post[] @relation("postlikes")
   followers User[] @relation("userfollows")
   following User[] @relation("userfollows")
-  bookmark Save[]
 }
 
 model Post{
@@ -39,22 +38,4 @@ model Comment{
   postid Int
   post Post @relation(fields : [postid], references : [id])
   createdAt DateTime @default(now())
-}
-
-model Save{
-  id Int @id @default(autoincrement())
-  userid Int
-  user User @relation(fields : [userid], references: [id])
-
-  postid Int?
-  post Post? @relation(fields : [postid], references: [id])
-
-  commentid Int?
-  comment Comment? @relation(fields : [commentid], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@index([userid, createdAt])
-  @@unique([userid, postid])
-  @@unique([userid, commentid])
 }
