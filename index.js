@@ -13,7 +13,10 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
-    origin: 'http://127.0.0.1:5173',
+    origin: [
+        'http://127.0.0.1:5173',
+        'https://overcastweb.vercel.app'
+    ],
     credentials: true,
 }))
 
@@ -29,6 +32,6 @@ app.get('/', (req, res) => {
     res.json({ msg: req.cookies });
 })
 
-app.listen(port, () => {
+app.listen(process.env.PORT || 8080, () => {
     console.log('listening');
 })
