@@ -15,21 +15,21 @@ router.post('/signup', async (req, res) => {
     // const data = req.body;
     try {
         const result = userschema.safeParse(req.body); //safeParse throws boolean, parse throws error
+        if (!result.success) return res.json({ msg: 'invalid credentials' })
         const usernameexists = await prisma.user.findUnique({
             where: {
                 username: result.data.username
             }
         })
-        if (!usernameexists) return res.json({ msg: "username already exists" })
+        if (usernameexists) return res.json({ msg: "username already exists" })
         const emailexists = await prisma.user.findUnique({
             where: {
                 email: result.data.email
             }
         })
-        if (!emailexists) return res.json({ msg: "email already exists" })
+        if (emailexists) return res.json({ msg: "email already exists" })
 
         // console.log(result);
-        if (!result.success) return res.json({ msg: 'invalid credentials' })
         const hash = await bcrypt.hash(result.data.password, 10);
         // console.log(hash);
         const user = await prisma.user.create({
